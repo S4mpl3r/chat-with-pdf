@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from langchain.chains.combine_documents.stuff import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain.docstore.document import Document
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader,DirectoryLoader
 from langchain_community.embeddings import JinaEmbeddings
 from langchain_community.vectorstores.chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
@@ -34,16 +34,18 @@ COLLECTION_NAME = "collection1"  # chromadb collection name
 load_dotenv()
 
 
-def load_document() -> List[Document]:
-    """Loads the pdf file specified by the FILE_NAME constant."""
+def load_documents() -> List[Document]:
+    """Loads the pdf files within the DOCUMENT_DIR constant."""
     try:
-        print("[+] Loading document...")
-        pdf = PyPDFLoader(path.join(DOCUMENT_DIR + FILE_NAME)).load()
+        print("[+] Loading documents...")
+        
+        pdf = DirectoryLoader(path.join(DOCUMENT_DIR), glob="**/*.pdf", loader_cls=PyPDFLoader).load()
         cprint(f"[+] Document loaded, pages: {len(pdf)}", "green")
 
         return pdf
     except:
         cprint("[-] Error loading the document.", "red")
+
 
 
 def chunk_document(documents: List[Document]) -> List[Document]:
@@ -92,7 +94,7 @@ def get_vectorstore_retriever(embedding_model: JinaEmbeddings) -> VectorStoreRet
         ).as_retriever(search_kwargs={"k": 3})
     except:
         # The vectorstore doesn't exist, so create it.
-        pdf = load_document()
+        pdf = load_documents()
         chunks = chunk_document(pdf)
         retriever = create_and_store_embeddings(embedding_model, chunks).as_retriever(
             search_kwargs={"k": 3}
