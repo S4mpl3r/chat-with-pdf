@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from langchain.chains.combine_documents.stuff import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain.docstore.document import Document
-from langchain_community.document_loaders import PyPDFLoader,DirectoryLoader
+from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain_community.embeddings import JinaEmbeddings
 from langchain_community.vectorstores.chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
@@ -26,7 +26,6 @@ LLM_TEMPERATURE = 0.1
 CHUNK_SIZE = 8192
 
 DOCUMENT_DIR = "./documents/"  # the directory where the pdf files should be placed
-FILE_NAME = "<FILENAME>"  # the pdf file name, CHANGE THIS!
 VECTOR_STORE_DIR = "./vectorstore/"  # the directory where the vectors are stored
 COLLECTION_NAME = "collection1"  # chromadb collection name
 # ===============================================================
@@ -38,14 +37,15 @@ def load_documents() -> List[Document]:
     """Loads the pdf files within the DOCUMENT_DIR constant."""
     try:
         print("[+] Loading documents...")
-        
-        pdf = DirectoryLoader(path.join(DOCUMENT_DIR), glob="**/*.pdf", loader_cls=PyPDFLoader).load()
-        cprint(f"[+] Document loaded, pages: {len(pdf)}", "green")
 
-        return pdf
+        documents = DirectoryLoader(
+            path.join(DOCUMENT_DIR), glob="**/*.pdf", loader_cls=PyPDFLoader
+        ).load()
+        cprint(f"[+] Document loaded, total pages: {len(documents)}", "green")
+
+        return documents
     except:
         cprint("[-] Error loading the document.", "red")
-
 
 
 def chunk_document(documents: List[Document]) -> List[Document]:
