@@ -1,6 +1,10 @@
 # Local storage
 documents/
 vectorstore/
+hf_model/
+
+#python env
+myvenv/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
